@@ -9,15 +9,27 @@ public class PlayerController : MonoBehaviour
     public SpriteRenderer playerRenderer;
     public float movementSpeed;
     public float damping;
+    public float runSpeed;
+    public float runDamping;
+    private float normalSpeed;
+    private float normalDamping;
     [HideInInspector]
     public Vector2 forceToApply;
     [HideInInspector]
     public Vector2 playerInput;
     [HideInInspector]
     public bool lastMoveNegative = false;
+
+    private void Awake()
+    {
+        normalSpeed = movementSpeed;
+        normalDamping = damping;
+    }
+
     void Update()
     {
         playerInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+        Run();
     }
 
     void FixedUpdate()
@@ -39,7 +51,7 @@ public class PlayerController : MonoBehaviour
         {
             playerRenderer.flipX = false;
         }
-        else if (0 > moveForce.x) 
+        else if (0 > moveForce.x)
         {
             playerRenderer.flipX = true;
         }
@@ -57,6 +69,21 @@ public class PlayerController : MonoBehaviour
 
         anim.SetFloat("speedX", moveForce.x);
         anim.SetFloat("speedY", moveForce.y);
+
+    }
+
+    void Run()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            movementSpeed = runSpeed;
+            damping = runDamping;
+        }
+        else if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            movementSpeed = normalSpeed;
+            damping = normalDamping;
+        }
     }
 
 }

@@ -24,10 +24,10 @@ public class MainMenu : MonoBehaviour
 
         for(int i = 0; i < resolutions.Length; i++)
         {
-            string option = resolutions[i].width + " x " + resolutions[i].height;
+            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + resolutions[i].refreshRateRatio + "hz";
             optionsList.Add(option);
 
-            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
+            if (resolutions[i].Equals(Screen.currentResolution))
             {
                 currentRes = i;
             }
