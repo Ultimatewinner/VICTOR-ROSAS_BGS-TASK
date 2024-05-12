@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Crown
   itemDescription: This is the crown of the ruined king
-  prefab: {fileID: 5570093021330781198, guid: 78b3f4c46d192044dbbc1bc176e64f45, type: 3}
+  prefabBuy: {fileID: 5377927170098504554, guid: a7a923403d36d514ba79b3b6e284019e, type: 3}
+  prefabSell: {fileID: 2779295663973360644, guid: 56527a4a5e2c02e4dac407e0d598a6c4, type: 3}
   quantity: 1
   sprite: {fileID: 21300000, guid: f30c689e1cd8caa45a28c4947f382374, type: 3}
   stackable: 0
   sellPrice: 500
+  buyPrice: 550

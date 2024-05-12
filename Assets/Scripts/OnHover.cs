@@ -7,19 +7,30 @@ using UnityEngine.EventSystems;
 public class OnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public Animator anim;
-    public TextMeshProUGUI nameText, descriptionText;
+    public PlayerController playerController;
+    public TextMeshProUGUI nameText, descriptionText, valueText;
     public InventoryItem item;
     public GameObject sellButton, equipButton;
-    public bool inStore = false;
+    public static bool inStore = false;
+    public bool isVendor = false;
     private static bool isAnimatingGlobal = false; // Static flag to track animation state across all instances
     private static OnHover currentHover; // Reference to the current hovered object
     private static Queue<OnHover> hoverQueue = new Queue<OnHover>(); // Queue to store hovered objects
     private bool isHovering = false; // Flag to track whether the mouse is currently hovering over this object
 
-    private void Start()
+    private void OnEnable()
     {
         nameText.text = item.itemName;
         descriptionText.text = item.itemDescription;
+        if(isVendor)
+        {
+            valueText.text = "Value: " + item.buyPrice + "$";
+        }
+        else
+        {
+            valueText.text = "Value: " + item.sellPrice + "$";
+        }
+        playerController = FindAnyObjectByType<PlayerController>();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -45,7 +56,19 @@ public class OnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         sellButton.SetActive(false);
         equipButton.SetActive(false);
     }
-    
+
+    private void FixedUpdate()
+    {
+        if(playerController.inShop) 
+        { 
+            inStore = true;
+        }
+        else
+        {
+            inStore = false;
+        }
+    }
+
     public void EnableButtons()
     {
         equipButton.SetActive(true);

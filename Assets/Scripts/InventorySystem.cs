@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // Added for Text component
+using UnityEngine.UI;
 
 public class InventorySystem : MonoBehaviour
 {
     public List<InventoryItem> inventory = new List<InventoryItem>();
-
+    public MoneyManager moneyManager;
     public GameObject inventoryUI;
-    public Transform itemsParent; // Parent transform for instantiated item prefabs
-
+    public Transform itemsParent;
+    public InventorySystem shop;
+    public bool isShop = false;
     private bool isInventoryOpen = false;
 
-    // Dictionary to store references to instantiated item prefabs
     private Dictionary<InventoryItem, GameObject> itemPrefabInstances = new Dictionary<InventoryItem, GameObject>();
 
     void Start()
@@ -20,31 +20,40 @@ public class InventorySystem : MonoBehaviour
         {
             foreach (var item in inventory)
             {
-                CreateItemUI(item);
+                if (isShop)
+                {
+                    CreateItemShop(item);
+                }
+                else
+                {
+                    CreateItemInv(item);
+                }
+
             }
         }
-
-        DisplayInventory();
+        inventoryUI.SetActive(false);
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && !isShop)
         {
             ToggleInventory();
+            if(shop.inventoryUI.activeInHierarchy)
+            {
+                shop.ToggleInventory();
+            }
         }
     }
 
-    private void ToggleInventory()
+    public void ToggleInventory()
     {
         isInventoryOpen = !isInventoryOpen;
         inventoryUI.SetActive(isInventoryOpen);
     }
 
-    // Method to add items to inventory
-    public void AddItem(InventoryItem item)
+    public void AddItemInventory(InventoryItem item)
     {
-        // Check if the item is stackable and if it's already in the inventory
         if (item.stackable)
         {
             InventoryItem existingItem = inventory.Find(i => i.itemName == item.itemName);
@@ -56,72 +65,80 @@ public class InventorySystem : MonoBehaviour
             }
         }
 
-        // If not stackable or not already in inventory, add as new item
         inventory.Add(item);
-        CreateItemUI(item);
+        CreateItemInv(item);
+    }
+    public void AddItemShop(InventoryItem item)
+    {
+        if (item.stackable)
+        {
+            InventoryItem existingItem = inventory.Find(i => i.itemName == item.itemName);
+            if (existingItem != null)
+            {
+                existingItem.quantity++;
+                UpdateItemUI(existingItem);
+                return;
+            }
+        }
+
+        inventory.Add(item);
+        CreateItemShop(item);
     }
 
-    private void CreateItemUI(InventoryItem item)
+    private void CreateItemInv(InventoryItem item)
     {
-        // Instantiate the item prefab and set its sprite
-        GameObject itemPrefabInstance = Instantiate(item.prefab, itemsParent);
+        GameObject itemPrefabInstance = Instantiate(item.prefabBuy, itemsParent);
 
-        // Store the reference to the instantiated prefab
+        itemPrefabInstances[item] = itemPrefabInstance;
+    }
+    private void CreateItemShop(InventoryItem item)
+    {
+        GameObject itemPrefabInstance = Instantiate(item.prefabSell, itemsParent);
+
         itemPrefabInstances[item] = itemPrefabInstance;
     }
 
     private void UpdateItemUI(InventoryItem item)
     {
-        // Update the quantity display of the item prefab
         GameObject itemPrefabInstance = itemPrefabInstances[item];
         itemPrefabInstance.GetComponentInChildren<Text>().text = item.quantity.ToString();
     }
 
-    public void RemoveItem(string itemName, int quantity)
+    public void RemoveItem(InventoryItem item)
     {
-        InventoryItem itemToRemove = inventory.Find(item => item.itemName == itemName);
-        if (itemToRemove != null)
+        if (item != null)
         {
-            itemToRemove.quantity -= quantity;
-            if (itemToRemove.quantity <= 0)
-            {
-                inventory.Remove(itemToRemove);
-            }
+            inventory.Remove(item);
         }
     }
 
-    public void SellItem(string itemName)
+    public bool SellItem(InventoryItem item)
     {
-        InventoryItem itemToSell = inventory.Find(item => item.itemName == itemName);
-        if (itemToSell != null)
+        if (item != null)
         {
-            // Add currency based on sell price
-            // (You would implement your currency system here)
-            // For simplicity, let's just print the sell price for now
-            Debug.Log("Sold " + itemName + " for " + itemToSell.sellPrice + " coins.");
-            inventory.Remove(itemToSell);
+            moneyManager.AddMoney(item.sellPrice);
+            RemoveItem(item);
+            shop.AddItemShop(item);
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
-    public void BuyItem(string itemName, int quantity, bool stackable, int sellPrice)
+    public bool BuyItem(InventoryItem item)
     {
-        // You would implement the buying logic here
-        // For simplicity, let's just add the item directly to inventory
-        AddItem(new InventoryItem() { itemName = itemName, quantity = quantity, stackable = stackable, sellPrice = sellPrice });
-        Debug.Log("Bought " + quantity + " " + itemName + "(s).");
-    }
-
-    public void DisplayInventory()
-    {
-        Debug.Log("Inventory:");
-        foreach (InventoryItem item in inventory)
+        if (moneyManager.money > item.buyPrice)
         {
-            Debug.Log(item.itemName + " - Quantity: " + item.quantity);
+            moneyManager.SubstractMoney(item.buyPrice);
+            shop.RemoveItem(item);
+            AddItemInventory(item);
+            return true;
         }
-    }
-
-    private InventoryItem CreateInventoryItem(string itemName, int quantity, bool stackable, int sellPrice)
-    {
-        return new InventoryItem() { itemName = itemName, quantity = quantity, stackable = stackable, sellPrice = sellPrice };
+        else
+        {
+            return false;
+        }
     }
 }

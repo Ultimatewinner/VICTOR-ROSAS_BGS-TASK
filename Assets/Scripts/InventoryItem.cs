@@ -5,9 +5,10 @@ public class InventoryItem : ScriptableObject
 {
     public string itemName;
     public string itemDescription;
-    public GameObject prefab;
+    public GameObject prefabBuy, prefabSell;
     public int quantity;
     public Sprite sprite;
     public bool stackable;
     public int sellPrice;
+    public int buyPrice;
 }
