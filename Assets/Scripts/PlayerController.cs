@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public float movementSpeed;
     public float damping;
     public float runSpeed;
+    public OnHover onHover;
     public float runDamping;
     private float normalSpeed;
     private float normalDamping;
@@ -70,6 +71,21 @@ public class PlayerController : MonoBehaviour
         anim.SetFloat("speedX", moveForce.x);
         anim.SetFloat("speedY", moveForce.y);
 
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Shop"))
+        {
+            onHover.inStore = true;
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Shop"))
+        {
+            onHover.inStore = false;
+        }
     }
 
     void Run()

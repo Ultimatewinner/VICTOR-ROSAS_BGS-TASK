@@ -4,6 +4,7 @@ using UnityEngine;
 public class InventoryItem : ScriptableObject
 {
     public string itemName;
+    public string itemDescription;
     public GameObject prefab;
     public int quantity;
     public Sprite sprite;
